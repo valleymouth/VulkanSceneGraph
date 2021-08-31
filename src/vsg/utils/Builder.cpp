@@ -151,15 +151,26 @@ Builder::StateSettings& Builder::_getStateSettings(const StateInfo& stateInfo)
 
     VertexInputState::Bindings vertexBindingsDescriptions{
         VkVertexInputBindingDescription{0, sizeof(vec3), VK_VERTEX_INPUT_RATE_VERTEX},  // vertex data
-        VkVertexInputBindingDescription{1, sizeof(vec3), VK_VERTEX_INPUT_RATE_VERTEX},  // normal data
-        VkVertexInputBindingDescription{2, sizeof(vec2), VK_VERTEX_INPUT_RATE_VERTEX}  // tex coord data
     };
 
     VertexInputState::Attributes vertexAttributeDescriptions{
         VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0}, // vertex data
-        VkVertexInputAttributeDescription{1, 1, VK_FORMAT_R32G32B32_SFLOAT, 0}, // normal data
-        VkVertexInputAttributeDescription{2, 2, VK_FORMAT_R32G32_SFLOAT, 0}    // tex coord data
     };
+
+    bool normals = false;
+    bool texcoords = false;
+
+    if (normals)
+    {
+        vertexBindingsDescriptions.push_back(VkVertexInputBindingDescription{1, sizeof(vec3), VK_VERTEX_INPUT_RATE_VERTEX});
+        vertexAttributeDescriptions.push_back(VkVertexInputAttributeDescription{1, 1, VK_FORMAT_R32G32B32_SFLOAT, 0});
+    }
+
+    if (texcoords)
+    {
+        vertexBindingsDescriptions.push_back(VkVertexInputBindingDescription{2, sizeof(vec2), VK_VERTEX_INPUT_RATE_VERTEX});
+        vertexAttributeDescriptions.push_back(VkVertexInputAttributeDescription{2, 2, VK_FORMAT_R32G32_SFLOAT, 0});
+    }
 
     if (stateInfo.instancce_colors_vec4)
     {
@@ -184,7 +195,11 @@ Builder::StateSettings& Builder::_getStateSettings(const StateInfo& stateInfo)
 
     auto inputAssemblyState = InputAssemblyState::create();
 
-    if (stateInfo.wireframe)
+    if (stateInfo.pointSprites)
+    {
+        inputAssemblyState->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+    }
+    else if (stateInfo.wireframe)
     {
         inputAssemblyState->topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
     }
@@ -1588,6 +1603,53 @@ ref_ptr<Node> Builder::createHeightField(const GeometryInfo& info, const StateIn
     vid->instanceCount = instanceCount;
 
     scenegraph->addChild(vid);
+
+    compile(scenegraph);
+
+    subgraph = scenegraph;
+    return subgraph;
+}
+
+ref_ptr<Node> Builder::createPoints(const GeometryInfo& info, const StateInfo& stateInfo)
+{
+    auto& subgraph = _points[info];
+    if (subgraph)
+    {
+        return subgraph;
+    }
+
+    auto positions = info.positions;
+    if (!positions) return {};
+
+    uint32_t num_vertices = positions->size();
+
+    auto colors = info.colors;
+    if (colors && colors->valueCount() != 1) colors = {};
+    if (!colors) colors = vec4Array::create(1, info.color);
+
+    // create StateGroup as the root of the scene/command graph to hold the GraphicsProgram, and binding of Descriptors to decorate the whole graph
+    auto scenegraph = StateGroup::create();
+    _assign(*scenegraph, stateInfo);
+
+    auto vertices = positions;
+    ref_ptr<vec3Array> normals; // = vec3Array::create(num_vertices);
+    ref_ptr<vec2Array> texcoords; // = vec2Array::create(num_vertices);
+
+    // setup geometry
+    DataList arrays;
+    arrays.push_back(vertices);
+    if (normals) arrays.push_back(normals);
+    if (texcoords) arrays.push_back(texcoords);
+    if (colors) arrays.push_back(colors);
+
+    auto bindVertexBuffers = vsg::BindVertexBuffers::create(0, arrays);
+    auto draw = vsg::Draw::create(num_vertices, 1, 0, 0);
+
+    auto commands = Commands::create();
+    commands->addChild(bindVertexBuffers);
+    commands->addChild(draw);
+
+    scenegraph->addChild(commands);
 
     compile(scenegraph);
 

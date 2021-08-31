@@ -13,6 +13,7 @@ namespace vsg
         bool blending = false;
         bool diffuseMap = false;
         bool wireframe = false;
+        bool pointSprites = false;
         bool instancce_colors_vec4 = true;
         bool instancce_positions_vec3 = false;
         ref_ptr<Data> image;
@@ -25,6 +26,7 @@ namespace vsg
             VSG_COMPARE_PARAMETERS(blending, rhs.blending)
             VSG_COMPARE_PARAMETERS(diffuseMap, rhs.diffuseMap)
             VSG_COMPARE_PARAMETERS(wireframe, rhs.wireframe)
+            VSG_COMPARE_PARAMETERS(pointSprites, rhs.pointSprites)
             VSG_COMPARE_PARAMETERS(instancce_colors_vec4, rhs.instancce_colors_vec4)
             VSG_COMPARE_PARAMETERS(instancce_positions_vec3, rhs.instancce_positions_vec3)
             VSG_COMPARE_PARAMETERS(image, rhs.image)
@@ -78,6 +80,7 @@ namespace vsg
         ref_ptr<Node> createQuad(const GeometryInfo& info = {}, const StateInfo& stateInfo = {});
         ref_ptr<Node> createSphere(const GeometryInfo& info = {}, const StateInfo& stateInfo = {});
         ref_ptr<Node> createHeightField(const GeometryInfo& info = {}, const StateInfo& stateInfo = {});
+        ref_ptr<Node> createPoints(const GeometryInfo& info = {}, const StateInfo& stateInfo = {});
 
     private:
 
@@ -124,6 +127,7 @@ namespace vsg
         GeometryMap _quads;
         GeometryMap _spheres;
         GeometryMap _heightfields;
+        GeometryMap _points;
 
         // used for comparisons
         mat4 identity;
