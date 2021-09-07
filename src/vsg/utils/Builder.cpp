@@ -1485,8 +1485,10 @@ ref_ptr<Node> Builder::createHeightField(const GeometryInfo& info, const StateIn
     auto positions = info.positions;
     if (positions)
     {
-        if (positions->size()>=1) instanceCount = positions->size();
-        else positions = {};
+        if (positions->size() >= 1)
+            instanceCount = positions->size();
+        else
+            positions = {};
     }
 
     auto colors = info.colors;
@@ -1500,7 +1502,7 @@ ref_ptr<Node> Builder::createHeightField(const GeometryInfo& info, const StateIn
     auto dx = info.dx;
     auto dy = info.dy;
     auto dz = info.dz;
-    auto origin = info.position - (dx + dy)*0.5f;
+    auto origin = info.position - (dx + dy) * 0.5f;
 
     unsigned int num_columns = 2;
     unsigned int num_rows = 2;
@@ -1510,14 +1512,12 @@ ref_ptr<Node> Builder::createHeightField(const GeometryInfo& info, const StateIn
         num_columns = stateInfo.displacementMap->width();
         num_rows = stateInfo.displacementMap->height();
 
-        if (num_columns<2) num_columns = 2;
-        if (num_rows<2) num_rows = 2;
+        if (num_columns < 2) num_columns = 2;
+        if (num_rows < 2) num_rows = 2;
     }
 
     unsigned int num_vertices = num_columns * num_rows;
-    unsigned int num_indices = (stateInfo.wireframe) ?
-        (4 * num_columns * num_rows - 2*(num_columns + num_rows)) :
-        (num_rows-1) * (num_rows-1)*6;
+    unsigned int num_indices = (stateInfo.wireframe) ? (4 * num_columns * num_rows - 2 * (num_columns + num_rows)) : (num_rows - 1) * (num_rows - 1) * 6;
 
     auto normal = normalize(dz);
 
@@ -1535,7 +1535,8 @@ ref_ptr<Node> Builder::createHeightField(const GeometryInfo& info, const StateIn
         for (unsigned int c = 0; c < num_columns; ++c)
         {
             unsigned int vi = left_i + c;
-            float tx = float(c) / float(num_columns - 1);;
+            float tx = float(c) / float(num_columns - 1);
+            ;
             vertices->set(vi, origin + dx * tx + dy * ty);
             normals->set(vi, normal);
             texcoords->set(vi, vec2(float(c) / float(num_columns - 1), t_origin + t_scale * ty));
@@ -1558,7 +1559,7 @@ ref_ptr<Node> Builder::createHeightField(const GeometryInfo& info, const StateIn
 
         for (unsigned int c = 0; c < num_columns; ++c)
         {
-            for (unsigned int r = 0; r < num_rows-1; ++r)
+            for (unsigned int r = 0; r < num_rows - 1; ++r)
             {
                 unsigned vi = num_columns * r + c;
                 indices->set(i++, vi);
@@ -1586,7 +1587,6 @@ ref_ptr<Node> Builder::createHeightField(const GeometryInfo& info, const StateIn
             }
         }
     }
-
 
     if (info.transform != identity)
     {
