@@ -29,6 +29,11 @@ void ShaderCompileSettings::read(Input& input)
     input.read("defaultVersion", defaultVersion);
     input.readValue<int>("target", target);
     input.read("forwardCompatible", forwardCompatible);
+
+    if (input.version_greater_equal(0, 1, 4))
+    {
+        input.read("defines", defines);
+    }
 }
 
 void ShaderCompileSettings::write(Output& output) const
@@ -39,6 +44,11 @@ void ShaderCompileSettings::write(Output& output) const
     output.write("defaultVersion", defaultVersion);
     output.writeValue<int>("target", target);
     output.write("forwardCompatible", forwardCompatible);
+
+    if (output.version_greater_equal(0, 1, 4))
+    {
+        output.write("defines", defines);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,19 +78,6 @@ ShaderModule::ShaderModule(const std::string& in_source, const SPIRV& in_code) :
 
 ShaderModule::~ShaderModule()
 {
-}
-
-ref_ptr<ShaderModule> ShaderModule::read(const std::string& filename)
-{
-    SPIRV buffer;
-    if (readFile(buffer, filename))
-    {
-        return ShaderModule::create(buffer);
-    }
-    else
-    {
-        throw Exception{"Error: vsg::ShaderModule::read(..) failed to read shader file.", VK_INCOMPLETE};
-    }
 }
 
 void ShaderModule::read(Input& input)

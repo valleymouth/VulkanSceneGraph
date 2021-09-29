@@ -44,19 +44,13 @@ namespace vsg
         void read(Input& input) override;
         void write(Output& output) const override;
 
-        /// custom readwrier/writer options
+        /// custom readwriter/writer options
         ref_ptr<Options> options;
 
         /// list of path/object pairs
         PathObjects entries;
 
         void add(const Path& filename, ref_ptr<Object> object = {}) { entries[filename] = object; }
-
-#if VSG_USE_DEPRECATED_METHODS_AND_IO
-        void setEntries(const PathObjects& in_entries) { entries = in_entries; }
-        PathObjects& getEntries() { return entries; }
-        const PathObjects& getEntries() const { return entries; }
-#endif
 
     protected:
         virtual ~External();
