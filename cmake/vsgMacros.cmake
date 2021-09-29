@@ -2,12 +2,11 @@
 # macros provided by the vsg library
 #
 
-# set directory where vsgMacros.cmake is located
-# VSG_MACROS_INSTALLED is defined in src/vsg/vsgConfig.cmake.in
-if(NOT VSG_MACROS_INSTALLED)
-    set(VSG_MACROS_DIR ${CMAKE_SOURCE_DIR})
+# give hint for cmake developers
+if(NOT _vsg_macros_included)
+    message(STATUS "Reading 'vsg_...' macros from ${CMAKE_CURRENT_LIST_DIR}/vsgMacros.cmake - look there for documentation")
+    set(_vsg_macros_included 1)
 endif()
-message(STATUS "Reading 'vsg_...' macros from ${VSG_MACROS_DIR}/vsgMacros.cmake - look there for documentation")
 
 #
 # setup build related variables
@@ -238,6 +237,7 @@ macro(vsg_add_target_clang_format)
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             COMMENT "Automated code format using clang-format"
         )
+        set_target_properties(clang-format PROPERTIES FOLDER ${PROJECT_NAME})
     endif()
 endmacro()
 
@@ -248,6 +248,7 @@ macro(vsg_add_target_clobber)
     add_custom_target(clobber
         COMMAND git -C ${CMAKE_SOURCE_DIR} clean -d -f -x
     )
+    set_target_properties(clobber PROPERTIES FOLDER ${PROJECT_NAME})
 endmacro()
 
 #
@@ -290,6 +291,7 @@ macro(vsg_add_target_cppcheck)
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             COMMENT "Static code analysis using cppcheck"
         )
+        set_target_properties(cppcheck PROPERTIES FOLDER ${PROJECT_NAME})
     endif()
 endmacro()
 
@@ -317,6 +319,7 @@ macro(vsg_add_target_docs)
             ${ARGS_FILES}
             COMMENT "Use doxygen to Generate html documentaion"
         )
+        set_target_properties(docs PROPERTIES FOLDER ${PROJECT_NAME})
     endif()
 endmacro()
 
@@ -324,16 +327,42 @@ endmacro()
 # add 'uninstall' build target
 #
 macro(vsg_add_target_uninstall)
-    if(VSG_MACROS_INSTALLED)
-        set(DIR ${VSG_MACROS_DIR})
+    # we are running inside VulkanSceneGraph
+    if (PROJECT_NAME STREQUAL "vsg")
+        # install file for client packages
+        install(FILES ${CMAKE_SOURCE_DIR}/cmake/uninstall.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/vsg)
+        set(DIR ${CMAKE_SOURCE_DIR}/cmake)
     else()
-        set(DIR ${CMAKE_SOURCE_DIR}/build)
+        set(DIR ${CMAKE_CURRENT_LIST_DIR})
     endif()
     add_custom_target(uninstall
         COMMAND ${CMAKE_COMMAND} -P ${DIR}/uninstall.cmake
     )
-    # install file for client packages if running in vsg repo
-    if(NOT VSG_MACROS_INSTALLED)
-        install(FILES ${CMAKE_SOURCE_DIR}/build/uninstall.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/vsg)
+    set_target_properties(uninstall PROPERTIES FOLDER ${PROJECT_NAME})
+endmacro()
+
+#
+# check minimum header version of Vulkan
+#
+# available arguments:
+#
+#    <min_version>      minimum required version e.g. 194
+#
+macro(vsg_check_min_vulkan_header_version _min_version)
+    if (Vulkan_FOUND)
+        set(VULKAN_CORE_H ${Vulkan_INCLUDE_DIRS}/vulkan/vulkan_core.h)
+        file(STRINGS  ${VULKAN_CORE_H} VulkanHeaderVersionLine REGEX "^#define VK_HEADER_VERSION ")
+        string(REGEX MATCHALL "[0-9]+" VulkanHeaderVersion "${VulkanHeaderVersionLine}")
+        message(STATUS "Detected VK_HEADER_VERSION is ${VulkanHeaderVersion}, in header ${VULKAN_CORE_H}")
+        if(${VulkanHeaderVersion} STRLESS ${_min_version})
+            message(FATAL_ERROR "Found Vulkan but VK_HEADER_VERSION is below minimum required value of ${_min_version}")
+        endif()
+    else()
+        message(FATAL_ERROR "Cannot check version because Vulkan was not found - use 'find_package(Vulkan REQUIRED)' to fix this")
     endif()
 endmacro()
+
+#
+# add options for vsg and all packages depending on vsg
+#
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)

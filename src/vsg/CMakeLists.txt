@@ -58,6 +58,10 @@ set(SOURCES
     commands/DrawIndirect.cpp
     commands/DrawIndexed.cpp
     commands/DrawIndexedIndirect.cpp
+    commands/SetDepthBias.cpp
+    commands/SetLineWidth.cpp
+    commands/SetScissor.cpp
+    commands/SetViewport.cpp
 
     state/Buffer.cpp
     state/BufferInfo.cpp
@@ -128,6 +132,7 @@ set(SOURCES
     viewer/EllipsoidModel.cpp
     viewer/Viewer.cpp
     viewer/Window.cpp
+    viewer/WindowAdapter.cpp
     viewer/Trackball.cpp
     viewer/CopyImageViewToWindow.cpp
     viewer/ExecuteCommands.cpp
@@ -257,6 +262,7 @@ endif()
 
 
 add_library(vsg ${HEADERS} ${SOURCES})
+set_target_properties(vsg PROPERTIES FOLDER "VulkanSceneGraph")
 
 if(MSVC)
     # ensure the libraries are all built in the lib directory
