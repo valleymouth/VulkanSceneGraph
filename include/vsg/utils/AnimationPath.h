@@ -19,6 +19,87 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 namespace vsg
 {
+    template<typename T, typename R>
+    T mix(T lhs, T rhs, R r)
+    {
+        R one_minus_r = 1 - r;
+        return lhs * one_minus_r + rhs * r;
+    }
+
+    template<typename T>
+    class Animation : public Inherit<Object, Animation<T> >
+    {
+    public:
+
+        using Location = T;
+
+        enum Mode
+        {
+            ONCE,
+            REPEAT,
+            FORWARD_AND_BACK
+        };
+
+        Mode mode = ONCE;
+        std::map<double, T> locations;
+
+        double period() const
+        {
+            if (locations.empty()) return 0.0;
+            return locations.rbegin()->first - locations.begin()->first;
+        }
+
+        Location computeLocation(double time) const
+        {
+            // check for empy locations map
+            if (locations.empty()) return {};
+
+            // check for single entry in locations map
+            if (locations.begin() == locations.rbegin().base()) return locations.begin()->second;
+
+            if (mode == REPEAT)
+            {
+                time = locations.begin()->first + std::fmod(time - locations.begin()->first, period());
+            }
+            else if (mode == FORWARD_AND_BACK)
+            {
+                double p = period();
+                double t = std::fmod(time - locations.begin()->first, p * 2.0);
+                if (t <= p)
+                    time = locations.begin()->first + t;
+                else if (t > p)
+                    time = locations.begin()->first + p * 2.0 - t;
+            }
+
+            if (time <= locations.begin()->first) return locations.begin()->second;
+            if (time >= locations.rbegin()->first) return locations.rbegin()->second;
+
+            auto not_less_itr = locations.lower_bound(time);
+            if (not_less_itr == locations.end()) return {};
+            if (not_less_itr == locations.begin()) return not_less_itr->second;
+
+            auto less_than_itr = not_less_itr;
+            --not_less_itr;
+
+            auto& lower = less_than_itr->second;
+            auto& upper = not_less_itr->second;
+            double r = (time - less_than_itr->first) / (not_less_itr->first - less_than_itr->first);
+
+            return mix(lower, upper, r);
+        }
+    };
+
+    struct Location
+    {
+        dvec3 position;
+        dquat orientation;
+        dvec3 scale = {1.0, 1.0, 1.0};
+    };
+
+    inline Location mix(const Location& lhs, const Location& rhs, double r)
+    {
+        return Location{mix(lhs.position, rhs.position, r), mix(lhs.orientation, rhs.orientation, r), mix(lhs.scale, rhs.scale, r)};
+    }
 
     class VSG_DECLSPEC AnimationPath : public Inherit<Object, AnimationPath>
     {
@@ -28,13 +109,6 @@ namespace vsg
             ONCE,
             REPEAT,
             FORWARD_AND_BACK
-        };
-
-        struct Location
-        {
-            dvec3 position;
-            dquat orientation;
-            dvec3 scale = {1.0, 1.0, 1.0};
         };
 
         Mode mode = ONCE;

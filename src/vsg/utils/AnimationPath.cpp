@@ -21,7 +21,7 @@ double AnimationPath::period() const
     return locations.rbegin()->first - locations.begin()->first;
 }
 
-AnimationPath::Location AnimationPath::computeLocation(double time) const
+Location AnimationPath::computeLocation(double time) const
 {
     // check for empy locations map
     if (locations.empty()) return {};
@@ -57,7 +57,7 @@ AnimationPath::Location AnimationPath::computeLocation(double time) const
     auto& upper = not_less_itr->second;
     double r = (time - less_than_itr->first) / (not_less_itr->first - less_than_itr->first);
 
-    return Location{mix(lower.position, upper.position, r), mix(lower.orientation, upper.orientation, r), mix(lower.scale, upper.scale, r)};
+    return mix(lower, upper, r);
 }
 
 dmat4 AnimationPath::computeMatrix(double time) const
