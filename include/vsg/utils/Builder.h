@@ -1,6 +1,18 @@
 #pragma once
 
-#include <vsg/all.h>
+/* <editor-fold desc="MIT License">
+
+Copyright(c) 2018 Robert Osfield
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+</editor-fold> */
+
+#include <vsg/traversals/CompileTraversal.h>
 
 #define VSG_COMPARE_PARAMETERS(A, B) \
     if (A < B)                       \
@@ -15,11 +27,12 @@ namespace vsg
         bool lighting = true;
         bool doubleSided = false;
         bool blending = false;
-        bool diffuseMap = false;
+        bool greyscale = false; /// greyscale image
         bool wireframe = false;
         bool pointSprites = false;
         bool instancce_colors_vec4 = true;
         bool instancce_positions_vec3 = false;
+
         ref_ptr<Data> image;
         ref_ptr<Data> displacementMap;
 
@@ -28,7 +41,7 @@ namespace vsg
             VSG_COMPARE_PARAMETERS(lighting, rhs.lighting)
             VSG_COMPARE_PARAMETERS(doubleSided, rhs.doubleSided)
             VSG_COMPARE_PARAMETERS(blending, rhs.blending)
-            VSG_COMPARE_PARAMETERS(diffuseMap, rhs.diffuseMap)
+            VSG_COMPARE_PARAMETERS(greyscale, rhs.greyscale)
             VSG_COMPARE_PARAMETERS(wireframe, rhs.wireframe)
             VSG_COMPARE_PARAMETERS(pointSprites, rhs.pointSprites)
             VSG_COMPARE_PARAMETERS(instancce_colors_vec4, rhs.instancce_colors_vec4)
@@ -37,6 +50,7 @@ namespace vsg
             return displacementMap < rhs.displacementMap;
         }
     };
+    VSG_type_name(vsg::StateInfo);
 
     struct GeometryInfo
     {
@@ -64,6 +78,7 @@ namespace vsg
             return false;
         }
     };
+    VSG_type_name(vsg::GeometryInfo);
 
     class VSG_DECLSPEC Builder : public Inherit<Object, Builder>
     {
@@ -85,6 +100,8 @@ namespace vsg
         ref_ptr<Node> createSphere(const GeometryInfo& info = {}, const StateInfo& stateInfo = {});
         ref_ptr<Node> createHeightField(const GeometryInfo& info = {}, const StateInfo& stateInfo = {});
         ref_ptr<Node> createPoints(const GeometryInfo& info = {}, const StateInfo& stateInfo = {});
+
+        ref_ptr<StateGroup> createStateGroup(const StateInfo& stateInfo = {});
 
     private:
         void transform(const mat4& matrix, ref_ptr<vec3Array> vertices, ref_ptr<vec3Array> normals);
@@ -135,5 +152,6 @@ namespace vsg
         // used for comparisons
         mat4 identity;
     };
+    VSG_type_name(vsg::Builder);
 
 } // namespace vsg
