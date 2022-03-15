@@ -63,7 +63,7 @@ using namespace vsg;
 #if 0
     // notes on GraphicsPipline
 
-    /// VkGraphicsPipelineCreateInfo settings
+    // VkGraphicsPipelineCreateInfo settings
     ShaderStages stages;
         vsg::ShaderStage: // VkPipelineShaderStageCreateInfo:
             VkPipelineShaderStageCreateFlags flags = 0;
@@ -76,10 +76,80 @@ using namespace vsg;
                 std::string source;
                 ref_ptr<ShaderCompileSettings> hints;
 
-        GraphicsPipelineStates pipelineStates;
-        ref_ptr<PipelineLayout> layout;
+    // see above
+    GraphicsPipelineStates pipelineStates;
+
+    ref_ptr<PipelineLayout> layout; // VkPipelineLayoutCreateInfo
+        VkPipelineLayoutCreateFlags flags = 0;
+        PushConstantRanges pushConstantRanges;
+        DescriptorSetLayouts setLayouts; // vector of vsg::DescriptorSetLayout
+    Provided by CompileTraversal/View:
         ref_ptr<RenderPass> renderPass;
         uint32_t subpass;
+#endif
 
+#if 0
+    // notes on DescriptorSetLayout, used by PipelineLayout and DescriptorSts
+
+    vsg::DescriptorSetLayout -> VkDescriptorSetLayoutCreateInfo
+    bindings -> std::vector<VkDescriptorSetLayoutBinding>;
+
+    VkDescriptorSetLayoutBinding {
+        uint32_t              binding;
+        VkDescriptorType      descriptorType;
+        uint32_t              descriptorCount;
+        VkShaderStageFlags    stageFlags;
+        const VkSampler*      pImmutableSamplers;
+    }
+
+    Descriptor
+        uint32_t dstBinding; // naps to the VkDescriptorSetLayoutBinding.binding
+        uint32_t dstArrayElement;
+        VkDescriptorType descriptorType;
+
+    DescriptorImage
+        uint32_t descriptorCount
+        vector<ImageInfo> imageInfos // maps to pImageInfo
+
+    DescriptorBuffer
+        uint32_t descriptorCount
+        vector<ImageBuffer> bufferInfoList // maps to pImageInfo
+
+    DescriptorTexelBufferView
+        uint32_t descriptorCount
+        vector<BufferView> texelBufferViews // maps to pTexelBufferView
+
+    using Descriptors = std::vector<vsg::ref_ptr<vsg::Descriptor>>;
+
+#endif
+
+#if 0
+    // notes on DescriptorSet, BindDescriptorSets and BindDescriptorSet
+
+    vsg::DescriptorSet
+        // VkDescriptorSetAllocateInfo settings
+        ref_ptr<DescriptorSetLayout> setLayout;
+        Descriptors descriptors; // VkWriteDescriptorSet
+
+        // could replace with std::
+
+
+        // VkWriteDescriptorSet provided by Desciptor
+            wds.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            wds.dstBinding -> needs to map to VkDescriptorSetLayoutBinding.binding
+            wds.dstArrayElement -> need to map within the VkDescriptorSetLayoutBinding.descriptorCount
+            wds.descriptorCount -> wds.dstArrayElement + wds.descriptorCount need to map within the VkDescriptorSetLayoutBinding.descriptorCount
+            wds.descriptorType -> VkDescriptorType
+            wds.pImageInfo -> from vsg::DescriptorImage
+            wds.pBufferInfo -> from vsg::DescriptorBuffer
+            wds.pTexelBufferView -> from vsg::DescriptorBufferView
+
+
+    vsg::BindDescriptorSets
+        /// vkCmdBindDescriptorSets settings
+        VkPipelineBindPoint pipelineBindPoint; // TODO not currently seralized
+        ref_ptr<PipelineLayout> layout;
+        uint32_t firstSet;
+        DescriptorSets descriptorSets;
 
 #endif
