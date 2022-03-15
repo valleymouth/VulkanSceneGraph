@@ -121,6 +121,11 @@ using namespace vsg;
 
     using Descriptors = std::vector<vsg::ref_ptr<vsg::Descriptor>>;
 
+    // general thoughts:
+    //     should Descriptor be renamed WriteDescriptorSet?
+    //     should DescriptorImage be renamed DesciptorImages?
+    //     should DescriptorBuffer be renamed DesciptorBuffers?
+    //     should DescriptorTexBufferView be renamed DesciptorBufferViews?
 #endif
 
 #if 0
@@ -130,9 +135,6 @@ using namespace vsg;
         // VkDescriptorSetAllocateInfo settings
         ref_ptr<DescriptorSetLayout> setLayout;
         Descriptors descriptors; // VkWriteDescriptorSet
-
-        // could replace with std::
-
 
         // VkWriteDescriptorSet provided by Desciptor
             wds.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
