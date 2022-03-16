@@ -7,6 +7,22 @@
 using namespace vsg;
 
 #if 0
+
+    struct StateInfo
+    {
+        bool lighting = true;
+        bool doubleSided = false;
+        bool blending = false;
+        bool greyscale = false; /// greyscale image
+        bool wireframe = false;
+        bool instancce_colors_vec4 = true;
+        bool instancce_positions_vec3 = false;
+
+        ref_ptr<Data> image;
+        ref_ptr<Data> displacementMap;
+        ref_ptr<DescriptorSetLayout> viewDescriptorSetLayout; // provided by CompileTraversal
+    }
+
     // notes on vsg::Builder, members and methods
     struct DescriptorKey
     {
@@ -113,7 +129,7 @@ using namespace vsg;
 
     DescriptorBuffer
         uint32_t descriptorCount
-        vector<ImageBuffer> bufferInfoList // maps to pImageInfo
+        vector<BufferInfo> bufferInfoList // maps to pImageInfo
 
     DescriptorTexelBufferView
         uint32_t descriptorCount
@@ -126,6 +142,25 @@ using namespace vsg;
     //     should DescriptorImage be renamed DesciptorImages?
     //     should DescriptorBuffer be renamed DesciptorBuffers?
     //     should DescriptorTexBufferView be renamed DesciptorBufferViews?
+    //
+    //  Or
+    //
+    //   struct WriteDescriptoSet
+    //   {
+    //       uint32_t dstBinind;
+    //       uint32_t distArrayElement;
+    //       VkDescriptoTyp desciptorType;
+    //       std:vector<ImageInfo> imageInfos;
+    //       std:vector<BufferInfo> bufferInfos;
+    //       std:vector<BufferView> textBufferView;
+    //   }
+    //
+    // In Vulkan 1.3
+    //       VkWriteDescriptorSetInlineUniformBlock needs to be added?
+    //
+    // Ray tracing extension:
+    //      VkWriteDescriptorSetAccelerationStructureKHR provided by vsg::DescriptorAccelerationStructure
+
 #endif
 
 #if 0
@@ -153,5 +188,36 @@ using namespace vsg;
         ref_ptr<PipelineLayout> layout;
         uint32_t firstSet;
         DescriptorSets descriptorSets;
+
+#endif
+
+#if 0
+
+        1. get default Data - may have multiple options.
+        2. modify data
+        3. search for matches data if found used match, return modified data to prototype cache
+        4. otherswise add prototype to cache and return;
+
+        template<T>
+        class DataCache
+        {
+            std::mutux mutex;
+
+            ref_ptr<Data> default;
+
+            std::set<ref_ptr<Data>, LessData> cache;
+
+            // pool of Data when we want data to set up.
+            std::list<ref_ptr<Data>> pool;
+
+            // get Data from the pool or clone the default
+            ref_ptr<T> create();
+
+            // search through cache for any matches,
+            // if match found return data to pool, and return match
+            // else insert data into cache and return data;
+            ref_ptr<T> unique(ref_ptr<Data> data = {});
+        };
+
 
 #endif
